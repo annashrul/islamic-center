@@ -305,7 +305,7 @@ const makeStyles = (C) => ({
         borderRadius: SIZES.radius, width: '23%', borderWidth: 1, borderColor: C.divider,
     },
     actionIcon: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
-    actionText: { fontSize: SIZES.caption, color: C.textSecondary, fontWeight: '600' },
+    actionText: { fontSize: SIZES.caption, color: C.textSecondary, fontWeight: '600', alignItems: 'center', justifyContent: 'center' },
     section: { paddingHorizontal: 20, marginTop: 24 },
     sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
     sectionTitle: { fontSize: SIZES.large, fontWeight: '700', color: C.textPrimary, letterSpacing: -0.3 },
