@@ -16,7 +16,7 @@ const BISMILLAH = '\u0628\u0650\u0633\u0652\u0645\u0650 \u0627\u0644\u0644\u0651
 const SurahDetailScreen = ({ route, navigation }) => {
     const { colors: COLORS, t } = useSettings();
     const styles = makeStyles(COLORS);
-    const { surah, scrollToAyah } = route.params;
+    const { surah, scrollToAyah, autoPlayFirstAyah } = route.params;
     const [ayahs, setAyahs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showTranslation, setShowTranslation] = useState(true);
@@ -90,9 +90,9 @@ const SurahDetailScreen = ({ route, navigation }) => {
         } catch (e) { }
     };
 
-    const navigateToSurah = (targetSurah) => {
+    const navigateToSurah = (targetSurah, shouldAutoPlayFirstAyah = false) => {
         stopAudio();
-        navigation.replace('SurahDetail', { surah: targetSurah });
+        navigation.replace('SurahDetail', { surah: targetSurah, autoPlayFirstAyah: shouldAutoPlayFirstAyah });
     };
 
     // Auto-scroll to marked ayah after data loads, and ensure it's marked
@@ -159,8 +159,15 @@ const SurahDetailScreen = ({ route, navigation }) => {
         if (repeatMode === 'one') { playAyah(ayahs[index], index); }
         else if (autoPlay && index < ayahs.length - 1) { playAyah(ayahs[index + 1], index + 1); }
         else if (repeatMode === 'all' && index === ayahs.length - 1) { playAyah(ayahs[0], 0); }
+        else if (autoPlay && index === ayahs.length - 1 && nextSurah) { navigateToSurah(nextSurah, true); }
         else { setIsPlaying(false); setCurrentPlayingAyah(null); }
-    }, [ayahs, autoPlay, repeatMode]);
+    }, [ayahs, autoPlay, repeatMode, nextSurah]);
+
+    useEffect(() => {
+        if (ayahs.length > 0 && autoPlayFirstAyah) {
+            playAyah(ayahs[0], 0);
+        }
+    }, [ayahs, autoPlayFirstAyah, playAyah]);
 
     const togglePlayPause = async () => {
         if (!soundRef.current) return;
