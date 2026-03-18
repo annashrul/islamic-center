@@ -6,7 +6,7 @@ import {
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { SIZES, SHADOWS } from '../constants/theme';
-import { fetchPrayerTimes } from '../services/apiService';
+import { fetchPrayerMonthSchedule, fetchPrayerTimes } from '../services/apiService';
 import {
     requestNotificationPermission, scheduleAdzanNotifications,
     getScheduledNotifications,
@@ -42,6 +42,8 @@ const PrayerTimesScreen = () => {
     const [longitude, setLongitude] = useState(106.8456);
     const [adzanEnabled, setAdzanEnabled] = useState(true);
     const [scheduledCount, setScheduledCount] = useState(0);
+    const [monthSchedule, setMonthSchedule] = useState([]);
+    const [selectedScheduleIndex, setSelectedScheduleIndex] = useState(0);
     const [playingAdzan, setPlayingAdzan] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [audioLoading, setAudioLoading] = useState(false);
@@ -79,7 +81,10 @@ const PrayerTimesScreen = () => {
             setLatitude(location.latitude); setLongitude(location.longitude);
             setLocationName(location.fullAddress); setLocationCoords(location.coords);
             const prayerData = await fetchPrayerTimes(location.latitude, location.longitude);
+            const monthly = await fetchPrayerMonthSchedule(location.latitude, location.longitude, new Date(), 30);
             setPrayerTimes(prayerData.timings);
+            setMonthSchedule(monthly);
+            setSelectedScheduleIndex(0);
             const hijri = prayerData.hijri;
             if (hijri) setHijriDate(`${hijri.day} ${hijri.month.en} ${hijri.year} H`);
             calculateNextPrayer(new Date(), prayerData.timings);
@@ -100,7 +105,7 @@ const PrayerTimesScreen = () => {
                 await scheduleAdzanNotifications(latitude, longitude);
                 const s = await getScheduledNotifications();
                 setScheduledCount(s.length); setAdzanEnabled(true);
-                Alert.alert('Adzan', `${s.length} adzan terjadwal hari ini.`);
+                Alert.alert('Adzan', `${s.length} adzan terjadwal untuk 30 hari ke depan.`);
             }
         }
     };
@@ -163,6 +168,21 @@ const PrayerTimesScreen = () => {
 
     const fmtMs = (ms) => { const s = Math.floor(ms / 1000); return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`; };
     const progress = duration > 0 ? (position / duration) * 100 : 0;
+    const activeSchedule = monthSchedule[selectedScheduleIndex] || null;
+    const activeTimings = activeSchedule?.timings || prayerTimes;
+    const activeDateLabel = activeSchedule?.date
+        ? activeSchedule.date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+        : currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const canPrevSchedule = selectedScheduleIndex > 0;
+    const canNextSchedule = selectedScheduleIndex < monthSchedule.length - 1;
+
+    const moveSchedule = (step) => {
+        setSelectedScheduleIndex((prev) => {
+            const next = prev + step;
+            if (next < 0 || next >= monthSchedule.length) return prev;
+            return next;
+        });
+    };
 
     if (loading) {
         return (
@@ -214,15 +234,35 @@ const PrayerTimesScreen = () => {
                     </View>
                 </View>
 
+                <View style={styles.scheduleNavCard}>
+                    <TouchableOpacity
+                        style={[styles.scheduleNavBtn, !canPrevSchedule && styles.scheduleNavBtnDisabled]}
+                        onPress={() => moveSchedule(-1)}
+                        disabled={!canPrevSchedule}
+                    >
+                        <Ionicons name="chevron-back" size={16} color={canPrevSchedule ? COLORS.primary : COLORS.textMuted} />
+                        <Text style={[styles.scheduleNavText, !canPrevSchedule && styles.scheduleNavTextDisabled]}>Prev</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.scheduleNavDate}>{activeDateLabel}</Text>
+                    <TouchableOpacity
+                        style={[styles.scheduleNavBtn, !canNextSchedule && styles.scheduleNavBtnDisabled]}
+                        onPress={() => moveSchedule(1)}
+                        disabled={!canNextSchedule}
+                    >
+                        <Text style={[styles.scheduleNavText, !canNextSchedule && styles.scheduleNavTextDisabled]}>Next</Text>
+                        <Ionicons name="chevron-forward" size={16} color={canNextSchedule ? COLORS.primary : COLORS.textMuted} />
+                    </TouchableOpacity>
+                </View>
+
                 {/* ===== PRAYER LIST ===== */}
                 <View style={styles.prayerSection}>
-                    {SHOWN_PRAYERS.map((key, idx) => {
-                        const time = prayerTimes?.[key];
+                    {SHOWN_PRAYERS.map((key) => {
+                        const time = activeTimings?.[key];
                         if (!time) return null;
-                        const isNext = key === nextPrayer;
+                        const isCurrentDay = selectedScheduleIndex === 0;
+                        const isNext = isCurrentDay && key === nextPrayer;
                         const canPlay = ADZAN_PRAYERS.includes(key);
                         const isPlayingThis = playingAdzan === key;
-                        const isLast = idx === SHOWN_PRAYERS.length - 1;
 
                         return (
                             <View key={key} style={[
@@ -303,7 +343,7 @@ const PrayerTimesScreen = () => {
                 {/* ===== INFO ===== */}
                 <View style={styles.infoCard}>
                     <Ionicons name="information-circle-outline" size={16} color={COLORS.textMuted} />
-                    <Text style={styles.infoText}>Metode: Kemenag RI · Sumber: Aladhan.com</Text>
+                    <Text style={styles.infoText}>Sumber: MuslimSalat · Fallback: Aladhan</Text>
                 </View>
 
                 <View style={{ height: 20 }} />
@@ -319,7 +359,7 @@ const PrayerTimesScreen = () => {
                         </View>
                         <View style={{ flex: 1, marginLeft: 12 }}>
                             <Text style={styles.playerTitle}>Adzan {PRAYER_NAMES_ID[playingAdzan]}</Text>
-                            <Text style={styles.playerSub}>{prayerTimes?.[playingAdzan]} · {locationName}</Text>
+                            <Text style={styles.playerSub}>{activeTimings?.[playingAdzan]} · {locationName}</Text>
                         </View>
                         <TouchableOpacity onPress={stopAudio} style={styles.playerClose}>
                             <Ionicons name="close" size={18} color={COLORS.textMuted} />
@@ -427,6 +467,23 @@ const makeStyles = (C) => ({
     },
     playBtnOnNext: { backgroundColor: 'rgba(255,255,255,0.18)' },
     playBtnActive: { backgroundColor: C.primary },
+
+    scheduleNavCard: {
+        marginHorizontal: 20, marginTop: 16, backgroundColor: C.surface, borderRadius: SIZES.radius,
+        borderWidth: 1, borderColor: C.divider, paddingHorizontal: 12, paddingVertical: 10,
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    },
+    scheduleNavBtn: {
+        flexDirection: 'row', alignItems: 'center', backgroundColor: C.primarySoft,
+        paddingVertical: 6, paddingHorizontal: 10, borderRadius: 10,
+    },
+    scheduleNavBtnDisabled: { backgroundColor: C.surfaceAlt },
+    scheduleNavText: { color: C.primary, fontWeight: '700', fontSize: 12 },
+    scheduleNavTextDisabled: { color: C.textMuted },
+    scheduleNavDate: {
+        flex: 1, textAlign: 'center', marginHorizontal: 8,
+        color: C.textPrimary, fontSize: SIZES.small, fontWeight: '700',
+    },
 
     // ===== NOTIFICATION =====
     notifCard: {

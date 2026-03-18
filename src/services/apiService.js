@@ -2,6 +2,7 @@ import {
     QURAN_API_BASE,
     QURAN_AUDIO_CDN,
     ALADHAN_API_BASE,
+    MUSLIM_SALAT_API_BASE,
     DOA_API_URL,
     ASMAUL_HUSNA_API_URL,
     ASMAUL_HUSNA_AUDIO_API,
@@ -12,6 +13,117 @@ import {
     GOLD_PRICE_API_URL,
 } from '../constants/apiUrls';
 import { Platform } from 'react-native';
+
+const formatTwoDigits = (num) => String(num).padStart(2, '0');
+
+const formatDatePathSegment = (date) => `${formatTwoDigits(date.getDate())}-${formatTwoDigits(date.getMonth() + 1)}-${date.getFullYear()}`;
+
+const parsePrayerDateValue = (value) => {
+    if (typeof value !== 'string') return null;
+    const parts = value.split('-').map(Number);
+    if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+};
+
+const parseTwelveHourToTwentyFourHour = (value) => {
+    if (!value || typeof value !== 'string') return null;
+    const match = value.trim().toLowerCase().match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/);
+    if (!match) return null;
+    const hourRaw = Number(match[1]);
+    const minute = Number(match[2]);
+    const period = match[3];
+    if (Number.isNaN(hourRaw) || Number.isNaN(minute)) return null;
+    let hour = hourRaw % 12;
+    if (period === 'pm') hour += 12;
+    return `${formatTwoDigits(hour)}:${formatTwoDigits(minute)}`;
+};
+
+const normalizeMuslimSalatTimings = (item) => {
+    if (!item) return null;
+    const fajr = parseTwelveHourToTwentyFourHour(item.fajr);
+    const sunrise = parseTwelveHourToTwentyFourHour(item.shurooq);
+    const dhuhr = parseTwelveHourToTwentyFourHour(item.dhuhr);
+    const asr = parseTwelveHourToTwentyFourHour(item.asr);
+    const maghrib = parseTwelveHourToTwentyFourHour(item.maghrib);
+    const isha = parseTwelveHourToTwentyFourHour(item.isha);
+    if (!fajr || !dhuhr || !asr || !maghrib || !isha) return null;
+    return {
+        Fajr: fajr,
+        Sunrise: sunrise || '',
+        Dhuhr: dhuhr,
+        Asr: asr,
+        Maghrib: maghrib,
+        Isha: isha,
+    };
+};
+
+const getPrayerLocationQuery = async (latitude, longitude) => {
+    try {
+        const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=10&accept-language=id`,
+            { headers: { Accept: 'application/json', 'User-Agent': 'islamic-center-app/1.0' } }
+        );
+        const data = await res.json();
+        const address = data?.address || {};
+        const query = address.city || address.town || address.county || address.state || '';
+        return query || `${latitude},${longitude}`;
+    } catch (e) {
+        return `${latitude},${longitude}`;
+    }
+};
+
+const fetchPrayerTimesFromMuslimSalat = async (latitude, longitude, date = new Date()) => {
+    const query = await getPrayerLocationQuery(latitude, longitude);
+    const encodedQuery = encodeURIComponent(query);
+    const datePath = formatDatePathSegment(date);
+    const res = await fetch(`${MUSLIM_SALAT_API_BASE}/${encodedQuery}/${datePath}.json`);
+    const data = await res.json();
+    const item = Array.isArray(data?.items) ? data.items[0] : null;
+    return normalizeMuslimSalatTimings(item);
+};
+
+export const fetchPrayerMonthSchedule = async (latitude, longitude, startDate = new Date(), days = 30) => {
+    const safeDays = Math.max(1, days);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + safeDays - 1);
+    const query = await getPrayerLocationQuery(latitude, longitude);
+    const encodedQuery = encodeURIComponent(query);
+    const monthRequests = [];
+    const marker = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+    while (marker <= endDate) {
+        const requestDate = new Date(marker.getFullYear(), marker.getMonth(), 1);
+        monthRequests.push(requestDate);
+        marker.setMonth(marker.getMonth() + 1);
+    }
+    const results = await Promise.all(monthRequests.map(async (monthDate) => {
+        try {
+            const pathDate = formatDatePathSegment(monthDate);
+            const res = await fetch(`${MUSLIM_SALAT_API_BASE}/${encodedQuery}/monthly/${pathDate}.json`);
+            const data = await res.json();
+            const items = Array.isArray(data?.items) ? data.items : [];
+            return items.map((item) => {
+                const parsedDate = parsePrayerDateValue(item.date_for);
+                const timings = normalizeMuslimSalatTimings(item);
+                if (!parsedDate || !timings) return null;
+                return {
+                    date: parsedDate,
+                    timings,
+                };
+            }).filter(Boolean);
+        } catch (e) {
+            return [];
+        }
+    }));
+    const merged = results.flat();
+    const uniqueByDate = merged.reduce((acc, row) => {
+        const key = row.date.toDateString();
+        if (!acc[key]) acc[key] = row;
+        return acc;
+    }, {});
+    return Object.values(uniqueByDate)
+        .filter((row) => row.date >= startDate && row.date <= endDate)
+        .sort((a, b) => a.date - b.date);
+};
 
 // CORS proxy for web platform
 
@@ -143,15 +255,22 @@ export const fetchPrayerTimes = async (latitude, longitude, date) => {
     const mm = d.getMonth() + 1;
     const yyyy = d.getFullYear();
 
-    const res = await fetch(
+    let muslimSalatTimings = null;
+    try {
+        muslimSalatTimings = await fetchPrayerTimesFromMuslimSalat(latitude, longitude, d);
+    } catch (e) { }
+
+    const aladhanRes = await fetch(
         `${ALADHAN_API_BASE}/timings/${dd}-${mm}-${yyyy}?latitude=${latitude}&longitude=${longitude}&method=20`
     );
-    const data = await res.json();
-    if (data.code === 200) {
+    const aladhanData = await aladhanRes.json();
+    if (aladhanData.code === 200) {
+        const fallbackTimings = aladhanData.data.timings;
+        const timings = muslimSalatTimings || fallbackTimings;
         return {
-            timings: data.data.timings,
-            date: data.data.date,
-            hijri: data.data.date?.hijri || null,
+            timings,
+            date: aladhanData.data.date,
+            hijri: aladhanData.data.date?.hijri || null,
         };
     }
     throw new Error('Failed to fetch prayer times');

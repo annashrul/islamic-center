@@ -1,6 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Audio } from 'expo-av';
-import { fetchPrayerTimes } from './apiService';
+import { fetchPrayerMonthSchedule } from './apiService';
 import { Platform } from 'react-native';
 import { ADZAN_AUDIO_URL, ADZAN_SUBUH_URL } from '../constants/apiUrls';
 import { PRAYER_NAMES_ID } from '../data/adzanPrayer';
@@ -52,26 +52,24 @@ export const requestNotificationPermission = async () => {
 // Schedule adzan notifications for today
 export const scheduleAdzanNotifications = async (latitude = -6.2088, longitude = 106.8456) => {
     try {
-        // Cancel all existing notifications first
         await Notifications.cancelAllScheduledNotificationsAsync();
 
-        const prayerData = await fetchPrayerTimes(latitude, longitude);
-        const timings = prayerData.timings;
+        const monthlySchedule = await fetchPrayerMonthSchedule(latitude, longitude, new Date(), 30);
         const now = new Date();
+        const maxScheduled = Platform.OS === 'ios' ? 60 : 180;
+        let scheduledTotal = 0;
 
-        for (const prayerKey of ADZAN_PRAYERS) {
-            const timeStr = timings[prayerKey];
-            if (!timeStr) continue;
+        for (const daySchedule of monthlySchedule) {
+            for (const prayerKey of ADZAN_PRAYERS) {
+                if (scheduledTotal >= maxScheduled) break;
+                const timeStr = daySchedule.timings?.[prayerKey];
+                if (!timeStr) continue;
 
-            const [hours, minutes] = timeStr.split(':').map(Number);
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                const prayerDate = new Date(daySchedule.date);
+                prayerDate.setHours(hours, minutes, 0, 0);
 
-            // Create date for this prayer time today
-            const prayerDate = new Date();
-            prayerDate.setHours(hours, minutes, 0, 0);
-
-            // Only schedule if prayer time is in the future
-            if (prayerDate > now) {
-                const secondsUntil = Math.floor((prayerDate - now) / 1000);
+                if (prayerDate <= now) continue;
 
                 await Notifications.scheduleNotificationAsync({
                     content: {
@@ -88,12 +86,13 @@ export const scheduleAdzanNotifications = async (latitude = -6.2088, longitude =
                         ...(Platform.OS === 'android' && { channelId: 'adzan' }),
                     },
                     trigger: {
-                        seconds: secondsUntil,
-                        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+                        type: Notifications.SchedulableTriggerInputTypes.DATE,
+                        date: prayerDate,
                     },
                 });
-
+                scheduledTotal += 1;
             }
+            if (scheduledTotal >= maxScheduled) break;
         }
 
         return true;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
+    Image,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
@@ -130,7 +131,6 @@ const HomeScreen = ({ navigation }) => {
 
                 <Text style={styles.headerDate}>{formatDate(currentTime)}</Text>
                 {hijriDate ? <Text style={styles.hijriDate}>{hijriDate}</Text> : null}
-
                 {/* Next Prayer Card */}
                 <View style={styles.nextPrayerCard}>
                     <View style={styles.nextPrayerLeft}>
@@ -289,6 +289,11 @@ const makeStyles = (C) => ({
     headerTimeLarge: { fontSize: SIZES.large, fontWeight: '700', color: C.white, letterSpacing: 1 },
     headerDate: { fontSize: SIZES.small, color: 'rgba(255,255,255,0.5)', marginTop: 12 },
     hijriDate: { fontSize: SIZES.small, color: C.accent, marginTop: 2, fontWeight: '500' },
+    brandBanner: {
+        marginTop: 14, borderRadius: SIZES.radius, overflow: 'hidden',
+        borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+    },
+    bannerImage: { width: '100%', height: 120 },
     nextPrayerCard: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
         backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: SIZES.radius, padding: 16, marginTop: 16,

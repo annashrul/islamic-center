@@ -9,6 +9,7 @@ export const QURAN_AUDIO_CDN = 'https://cdn.islamic.network/quran/audio/128/ar.a
 
 // ====== JADWAL SHOLAT & HIJRIYAH & KIBLAT ======
 export const ALADHAN_API_BASE = 'https://api.aladhan.com/v1';
+export const MUSLIM_SALAT_API_BASE = 'https://muslimsalat.com';
 
 // ====== ADZAN AUDIO ======
 export const ADZAN_AUDIO_URL = 'https://cdn.islamdownload.net/wp-content/uploads-by-id/123801/mecca_56_22.mp3?_=4';
