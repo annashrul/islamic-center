@@ -1,16 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SIZES } from '../constants/theme';
+import { SIZES } from '../constants/theme';
+import { useSettings } from '../context/SettingsContext';
 
-const PrayerTimeCard = ({ name, time, isNext, icon }) => {
+const PrayerTimeCard = ({ name, time, isNext }) => {
+  const { colors: COLORS } = useSettings();
+  const styles = makeStyles(COLORS);
+
   return (
     <View style={[styles.container, isNext && styles.activeContainer]}>
       <View style={styles.left}>
         <Ionicons
           name={isNext ? 'notifications' : 'notifications-outline'}
-          size={18}
-          color={isNext ? COLORS.white : COLORS.gray}
+          size={16}
+          color={isNext ? COLORS.white : COLORS.textMuted}
         />
         <Text style={[styles.name, isNext && styles.activeText]}>{name}</Text>
       </View>
@@ -19,42 +23,18 @@ const PrayerTimeCard = ({ name, time, isNext, icon }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const makeStyles = (C) => ({
   container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    backgroundColor: COLORS.white,
-    borderBottomWidth: 0.5,
-    borderBottomColor: COLORS.lightGray,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingVertical: 13, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: C.divider,
   },
   activeContainer: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    marginHorizontal: 4,
-    marginVertical: 2,
-    borderBottomWidth: 0,
+    backgroundColor: C.primary, borderRadius: SIZES.radiusSm, marginHorizontal: 4, marginVertical: 2, borderBottomWidth: 0,
   },
-  left: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  name: {
-    fontSize: SIZES.medium,
-    color: COLORS.darkGray,
-    marginLeft: 12,
-    fontWeight: '500',
-  },
-  time: {
-    fontSize: SIZES.medium,
-    color: COLORS.darkGray,
-    fontWeight: '600',
-  },
-  activeText: {
-    color: COLORS.white,
-  },
+  left: { flexDirection: 'row', alignItems: 'center' },
+  name: { fontSize: SIZES.font, color: C.textSecondary, marginLeft: 10, fontWeight: '500' },
+  time: { fontSize: SIZES.font, color: C.textSecondary, fontWeight: '600' },
+  activeText: { color: C.white },
 });
 
 export default PrayerTimeCard;

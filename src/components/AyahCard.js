@@ -1,9 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SIZES } from '../constants/theme';
+import { SIZES } from '../constants/theme';
+import { useSettings } from '../context/SettingsContext';
 
 const AyahCard = ({ ayah, surahNumber }) => {
+  const { colors: COLORS } = useSettings();
+  const styles = makeStyles(COLORS);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -26,13 +30,13 @@ const AyahCard = ({ ayah, surahNumber }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const makeStyles = (C) => ({
   container: {
-    backgroundColor: COLORS.white,
+    backgroundColor: C.surface,
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 0.5,
-    borderBottomColor: COLORS.lightGray,
+    borderBottomColor: C.divider,
   },
   header: {
     flexDirection: 'row',
@@ -44,12 +48,12 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: COLORS.primary,
+    backgroundColor: C.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   ayahNumberText: {
-    color: COLORS.white,
+    color: C.white,
     fontSize: SIZES.small,
     fontWeight: '700',
   },
@@ -61,20 +65,20 @@ const styles = StyleSheet.create({
   },
   arabicText: {
     fontSize: SIZES.arabicLarge,
-    color: COLORS.darkGray,
+    color: C.textPrimary,
     textAlign: 'right',
     lineHeight: 56,
     marginBottom: 12,
   },
   translation: {
     fontSize: SIZES.font,
-    color: COLORS.gray,
+    color: C.textMuted,
     lineHeight: 22,
     marginBottom: 6,
   },
   transliteration: {
     fontSize: SIZES.small,
-    color: COLORS.primaryLight,
+    color: C.primary,
     fontStyle: 'italic',
     lineHeight: 20,
   },

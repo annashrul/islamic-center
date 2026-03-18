@@ -1,338 +1,295 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ImageBackground,
-  StatusBar,
+    View,
+    Text,
+    StyleSheet,
+    ScrollView,
+    TouchableOpacity,
+    StatusBar,
+    ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SIZES } from '../constants/theme';
-import PrayerTimeCard from '../components/PrayerTimeCard';
+import { SIZES } from '../constants/theme';
+import { useSettings } from '../context/SettingsContext';
+import { fetchPrayerTimes } from '../data/apiService';
+import { getUserLocation } from '../services/locationService';
+import { getMostRecentLastRead } from '../services/lastReadService';
 
-const PRAYER_TIMES = [
-  { name: 'Subuh', time: '04:35' },
-  { name: 'Terbit', time: '05:52' },
-  { name: 'Dzuhur', time: '11:55' },
-  { name: 'Ashar', time: '15:13' },
-  { name: 'Maghrib', time: '17:55' },
-  { name: 'Isya', time: '19:08' },
-];
-
-const HomeScreen = ({ navigation }) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [nextPrayer, setNextPrayer] = useState('Dzuhur');
-  const [hijriDate, setHijriDate] = useState('');
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    const currentMinutes = hours * 60 + minutes;
-
-    const prayerMinutes = PRAYER_TIMES.map((p) => {
-      const [h, m] = p.time.split(':').map(Number);
-      return { name: p.name, total: h * 60 + m };
-    });
-
-    const next = prayerMinutes.find((p) => p.total > currentMinutes);
-    if (next) setNextPrayer(next.name);
-    else setNextPrayer(prayerMinutes[0].name);
-
-    const day = now.getDate();
-    const month = now.getMonth();
-    const hijriMonths = [
-      'Muharram', 'Safar', 'Rabiul Awal', 'Rabiul Akhir',
-      'Jumadil Awal', 'Jumadil Akhir', 'Rajab', 'Syaban',
-      'Ramadhan', 'Syawal', 'Dzulqaidah', 'Dzulhijjah',
-    ];
-    setHijriDate(`${day} ${hijriMonths[month]} 1447 H`);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatTime = (date) => {
-    return date.toLocaleTimeString('id-ID', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  };
-
-  const formatDate = (date) => {
-    return date.toLocaleDateString('id-ID', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <StatusBar barStyle="light-content" />
-      <View style={styles.headerGradient}>
-        <View style={styles.headerContent}>
-          <Text style={styles.greeting}>Assalamu'alaikum</Text>
-          <Text style={styles.headerTime}>{formatTime(currentTime)}</Text>
-          <Text style={styles.headerDate}>{formatDate(currentTime)}</Text>
-          <Text style={styles.hijriDate}>{hijriDate}</Text>
-
-          <View style={styles.nextPrayerBanner}>
-            <Ionicons name="time-outline" size={18} color={COLORS.secondary} />
-            <Text style={styles.nextPrayerText}>
-              Waktu sholat selanjutnya: <Text style={styles.nextPrayerName}>{nextPrayer}</Text>
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.mosqueDecor}>
-          <Ionicons name="moon-outline" size={24} color="rgba(255,255,255,0.3)" />
-        </View>
-      </View>
-
-      <View style={styles.quickActions}>
-        <TouchableOpacity
-          style={styles.actionCard}
-          onPress={() => navigation.navigate('Quran')}
-        >
-          <View style={[styles.actionIcon, { backgroundColor: '#E8F5E9' }]}>
-            <Ionicons name="book" size={24} color={COLORS.primary} />
-          </View>
-          <Text style={styles.actionText}>Al-Quran</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('PrayerTimes')}>
-          <View style={[styles.actionIcon, { backgroundColor: '#FFF3E0' }]}>
-            <Ionicons name="time" size={24} color="#FF9800" />
-          </View>
-          <Text style={styles.actionText}>Jadwal{'\n'}Sholat</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('Qibla')}>
-          <View style={[styles.actionIcon, { backgroundColor: '#E3F2FD' }]}>
-            <Ionicons name="compass" size={24} color="#2196F3" />
-          </View>
-          <Text style={styles.actionText}>Arah{'\n'}Kiblat</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('Doa')}>
-          <View style={[styles.actionIcon, { backgroundColor: '#F3E5F5' }]}>
-            <Ionicons name="heart" size={24} color="#9C27B0" />
-          </View>
-          <Text style={styles.actionText}>Doa{'\n'}Harian</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.prayerSection}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Waktu Sholat Hari Ini</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('PrayerTimes')}>
-            <Text style={styles.seeAll}>Lihat Semua</Text>
-          </TouchableOpacity>
-        </View>
-
-        {PRAYER_TIMES.map((prayer) => (
-          <PrayerTimeCard
-            key={prayer.name}
-            name={prayer.name}
-            time={prayer.time}
-            isNext={prayer.name === nextPrayer}
-          />
-        ))}
-      </View>
-
-      <View style={styles.lastReadSection}>
-        <Text style={styles.sectionTitle}>Terakhir Dibaca</Text>
-        <TouchableOpacity
-          style={styles.lastReadCard}
-          onPress={() => navigation.navigate('Quran')}
-        >
-          <View style={styles.lastReadLeft}>
-            <Ionicons name="book-outline" size={24} color={COLORS.primary} />
-            <View style={styles.lastReadInfo}>
-              <Text style={styles.lastReadSurah}>Al-Fatihah</Text>
-              <Text style={styles.lastReadAyah}>Ayat 1 - 7</Text>
-            </View>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={COLORS.gray} />
-        </TouchableOpacity>
-      </View>
-
-      <View style={{ height: 30 }} />
-    </ScrollView>
-  );
+const PRAYER_NAMES_ID = {
+    Fajr: 'Subuh', Sunrise: 'Terbit', Dhuhr: 'Dzuhur', Asr: 'Ashar', Maghrib: 'Maghrib', Isha: 'Isya',
+};
+const SHOWN_PRAYERS = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+const PRAYER_ICONS = {
+    Fajr: 'sunny-outline', Sunrise: 'sunny', Dhuhr: 'sunny',
+    Asr: 'partly-sunny', Maghrib: 'cloudy-night', Isha: 'moon',
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  headerGradient: {
-    backgroundColor: COLORS.primary,
-    paddingTop: 60,
-    paddingBottom: 30,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerContent: {
-    alignItems: 'center',
-  },
-  greeting: {
-    fontSize: SIZES.large,
-    color: 'rgba(255,255,255,0.8)',
-    marginBottom: 8,
-  },
-  headerTime: {
-    fontSize: 42,
-    fontWeight: '700',
-    color: COLORS.white,
-    letterSpacing: 2,
-  },
-  headerDate: {
-    fontSize: SIZES.font,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: 4,
-  },
-  hijriDate: {
-    fontSize: SIZES.font,
-    color: COLORS.secondary,
-    marginTop: 4,
-    fontWeight: '500',
-  },
-  nextPrayerBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 20,
-    marginTop: 16,
-  },
-  nextPrayerText: {
-    color: COLORS.white,
-    fontSize: SIZES.font,
-    marginLeft: 8,
-  },
-  nextPrayerName: {
-    fontWeight: '700',
-    color: COLORS.secondary,
-  },
-  mosqueDecor: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-  },
-  quickActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 10,
-    marginTop: -15,
-    marginBottom: 20,
-  },
-  actionCard: {
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    width: '22%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  actionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  actionText: {
-    fontSize: 11,
-    color: COLORS.darkGray,
-    textAlign: 'center',
-    fontWeight: '500',
-    lineHeight: 15,
-  },
-  prayerSection: {
-    backgroundColor: COLORS.white,
-    marginHorizontal: 16,
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 0.5,
-    borderBottomColor: COLORS.lightGray,
-  },
-  sectionTitle: {
-    fontSize: SIZES.large,
-    fontWeight: '700',
-    color: COLORS.darkGray,
-    marginBottom: 12,
-    marginHorizontal: 16,
-    marginTop: 8,
-  },
-  seeAll: {
-    fontSize: SIZES.font,
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  lastReadSection: {
-    paddingHorizontal: 0,
-    marginBottom: 10,
-  },
-  lastReadCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    marginHorizontal: 16,
-    padding: 16,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  lastReadLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  lastReadInfo: {
-    marginLeft: 12,
-  },
-  lastReadSurah: {
-    fontSize: SIZES.medium,
-    fontWeight: '600',
-    color: COLORS.darkGray,
-  },
-  lastReadAyah: {
-    fontSize: SIZES.small,
-    color: COLORS.gray,
-    marginTop: 2,
-  },
+const HomeScreen = ({ navigation }) => {
+    const { colors: COLORS, t } = useSettings();
+    const styles = makeStyles(COLORS);
+    const [currentTime, setCurrentTime] = useState(new Date());
+    const [nextPrayer, setNextPrayer] = useState('');
+    const [nextPrayerTime, setNextPrayerTime] = useState('');
+    const [hijriDate, setHijriDate] = useState('');
+    const [prayerTimes, setPrayerTimes] = useState(null);
+    const [loadingPrayer, setLoadingPrayer] = useState(true);
+    const [locationName, setLocationName] = useState('');
+    const [lastRead, setLastRead] = useState(null);
+
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    useEffect(() => { loadData(); }, []);
+
+    useEffect(() => {
+        if (prayerTimes) {
+            const now = new Date();
+            const currentMin = now.getHours() * 60 + now.getMinutes();
+            const prayers = SHOWN_PRAYERS.map((key) => {
+                const t = prayerTimes[key];
+                if (!t) return null;
+                const [h, m] = t.split(':').map(Number);
+                return { name: PRAYER_NAMES_ID[key], total: h * 60 + m, time: t, key };
+            }).filter(Boolean);
+            const next = prayers.find((p) => p.total > currentMin);
+            setNextPrayer(next ? next.name : prayers[0]?.name || '');
+            setNextPrayerTime(next ? next.time : prayers[0]?.time || '');
+        }
+    }, [prayerTimes, currentTime]);
+
+    const loadData = async () => {
+        try {
+            const [location, savedLastRead] = await Promise.all([
+                getUserLocation(),
+                getMostRecentLastRead(),
+            ]);
+            setLocationName(location.fullAddress);
+            if (savedLastRead) setLastRead(savedLastRead);
+
+            const prayerData = await fetchPrayerTimes(location.latitude, location.longitude);
+            setPrayerTimes(prayerData.timings);
+            const hijri = prayerData.hijri;
+            if (hijri) setHijriDate(`${hijri.day} ${hijri.month.en} ${hijri.year} H`);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoadingPrayer(false);
+        }
+    };
+
+    const formatTime = (date) =>
+        date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+    const formatDate = (date) =>
+        date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    const quickActions = [
+        { icon: 'time-outline', label: t.menu_prayer, nav: 'Home_PrayerTimes', bg: COLORS.accentLight, color: COLORS.accent },
+        { icon: 'radio-button-on-outline', label: t.menu_tasbih, nav: 'Home_Tasbih', bg: COLORS.surfaceAlt, color: '#7E57C2' },
+        { icon: 'star-outline', label: t.menu_asmaul, nav: 'Home_AsmaulHusna', bg: COLORS.primarySoft, color: COLORS.primary },
+        { icon: 'heart-outline', label: t.menu_doa, nav: 'Home_Doa', bg: COLORS.surfaceAlt, color: '#E91E63' },
+    ];
+
+    return (
+        <ScrollView style={[styles.container, { backgroundColor: COLORS.background }]} showsVerticalScrollIndicator={false}>
+            <StatusBar barStyle="light-content" />
+
+            {/* Header */}
+            <View style={[styles.header, { backgroundColor: COLORS.primary }]}>
+                <View style={styles.headerTop}>
+                    <View>
+                        <Text style={styles.greeting}>{t.greeting}</Text>
+                        {locationName ? (
+                            <View style={styles.locationRow}>
+                                <Ionicons name="location-outline" size={13} color={COLORS.accent} />
+                                <Text style={styles.locationText}>{locationName}</Text>
+                            </View>
+                        ) : null}
+                    </View>
+                    <View style={styles.headerTimeBox}>
+                        <Text style={styles.headerTimeLarge}>{formatTime(currentTime)}</Text>
+                    </View>
+                </View>
+
+                <Text style={styles.headerDate}>{formatDate(currentTime)}</Text>
+                {hijriDate ? <Text style={styles.hijriDate}>{hijriDate}</Text> : null}
+
+                {/* Next Prayer Card */}
+                <View style={styles.nextPrayerCard}>
+                    <View style={styles.nextPrayerLeft}>
+                        <Text style={styles.nextPrayerLabel}>{t.next_prayer}</Text>
+                        <Text style={styles.nextPrayerName}>{nextPrayer}</Text>
+                    </View>
+                    <View style={styles.nextPrayerRight}>
+                        <Text style={styles.nextPrayerTime}>{nextPrayerTime}</Text>
+                    </View>
+                </View>
+            </View>
+
+            {/* Quick Actions */}
+            <View style={styles.quickActions}>
+                {quickActions.map((item) => (
+                    <TouchableOpacity key={item.label} style={styles.actionCard} onPress={() => navigation.navigate(item.nav)} activeOpacity={0.7}>
+                        <View style={[styles.actionIcon, { backgroundColor: item.bg }]}>
+                            <Ionicons name={item.icon} size={22} color={item.color} />
+                        </View>
+                        <Text style={styles.actionText}>{item.label}</Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+
+            {/* Prayer Times */}
+            <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>{t.prayer_times}</Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('Home_PrayerTimes')}>
+                        <Text style={styles.seeAll}>{t.see_more}</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.prayerCard}>
+                    {loadingPrayer ? (
+                        <ActivityIndicator size="small" color={COLORS.primary} style={{ padding: 24 }} />
+                    ) : (
+                        SHOWN_PRAYERS.map((key, idx) => {
+                            const time = prayerTimes?.[key];
+                            if (!time) return null;
+                            const isNext = PRAYER_NAMES_ID[key] === nextPrayer;
+                            return (
+                                <View key={key} style={[styles.prayerRow, idx < SHOWN_PRAYERS.length - 1 && styles.prayerRowBorder]}>
+                                    <View style={styles.prayerLeft}>
+                                        <View style={[styles.prayerIcon, isNext && styles.prayerIconActive]}>
+                                            <Ionicons name={PRAYER_ICONS[key]} size={16} color={isNext ? COLORS.white : COLORS.textMuted} />
+                                        </View>
+                                        <Text style={[styles.prayerName, isNext && styles.prayerNameActive]}>
+                                            {PRAYER_NAMES_ID[key]}
+                                        </Text>
+                                        {isNext && <View style={styles.nextBadge}><Text style={styles.nextBadgeText}>{t.next_label}</Text></View>}
+                                    </View>
+                                    <Text style={[styles.prayerTime, isNext && styles.prayerTimeActive]}>{time}</Text>
+                                </View>
+                            );
+                        })
+                    )}
+                </View>
+            </View>
+
+            {/* Last Read */}
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>{t.last_read}</Text>
+                <TouchableOpacity
+                    style={styles.lastReadCard}
+                    onPress={() => {
+                        if (lastRead) {
+                            if (lastRead.type === 'juz') {
+                                navigation.navigate('Quran');
+                            } else {
+                                navigation.navigate('Home_SurahDetail', {
+                                    surah: {
+                                        number: lastRead.surahNumber,
+                                        name: lastRead.surahName,
+                                        arabic: lastRead.surahArabic || '',
+                                        meaning: lastRead.surahMeaning || '',
+                                        verses: lastRead.surahVerses || 0,
+                                        type: lastRead.surahType || '',
+                                    },
+                                    scrollToAyah: lastRead.ayahNumber,
+                                });
+                            }
+                        } else {
+                            navigation.navigate('Quran');
+                        }
+                    }}
+                    activeOpacity={0.7}
+                >
+                    <View style={styles.lastReadIcon}>
+                        <Ionicons name="book-outline" size={22} color={COLORS.primary} />
+                    </View>
+                    <View style={styles.lastReadInfo}>
+                        <Text style={styles.lastReadSurah}>
+                            {lastRead
+                                ? lastRead.type === 'juz'
+                                    ? `Juz ${lastRead.juzNumber} · ${lastRead.surahName}`
+                                    : lastRead.surahName
+                                : 'Belum ada'}
+                        </Text>
+                        <Text style={styles.lastReadAyah}>
+                            {lastRead
+                                ? lastRead.type === 'juz'
+                                    ? `Ayat ${lastRead.ayahNumberInSurah || lastRead.ayahNumber}`
+                                    : `Ayat ${lastRead.ayahNumber}`
+                                : 'Mulai membaca Al-Quran'}
+                        </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
+                </TouchableOpacity>
+            </View>
+
+            <View style={{ height: 30 }} />
+        </ScrollView>
+    );
+};
+
+// Dynamic styles - called inside component to get current theme colors
+const makeStyles = (C) => ({
+    container: { flex: 1, backgroundColor: C.background },
+    header: {
+        backgroundColor: C.primary, paddingTop: 30, paddingBottom: 24, paddingHorizontal: 20,
+        borderBottomLeftRadius: SIZES.radiusXl, borderBottomRightRadius: SIZES.radiusXl,
+    },
+    headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+    greeting: { fontSize: SIZES.title, fontWeight: '700', color: C.white, letterSpacing: -0.3 },
+    locationRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+    locationText: { fontSize: SIZES.caption, color: 'rgba(255,255,255,0.6)', marginLeft: 4 },
+    headerTimeBox: {
+        backgroundColor: 'rgba(255,255,255,0.12)', paddingHorizontal: 14, paddingVertical: 6, borderRadius: SIZES.radiusSm,
+    },
+    headerTimeLarge: { fontSize: SIZES.large, fontWeight: '700', color: C.white, letterSpacing: 1 },
+    headerDate: { fontSize: SIZES.small, color: 'rgba(255,255,255,0.5)', marginTop: 12 },
+    hijriDate: { fontSize: SIZES.small, color: C.accent, marginTop: 2, fontWeight: '500' },
+    nextPrayerCard: {
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: SIZES.radius, padding: 16, marginTop: 16,
+        borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    },
+    nextPrayerLeft: {},
+    nextPrayerLabel: { fontSize: SIZES.caption, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5 },
+    nextPrayerName: { fontSize: SIZES.title, fontWeight: '700', color: C.white, marginTop: 2 },
+    nextPrayerRight: { backgroundColor: C.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: SIZES.radiusSm },
+    nextPrayerTime: { fontSize: SIZES.large, fontWeight: '700', color: C.white },
+    quickActions: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: -16 },
+    actionCard: {
+        alignItems: 'center', backgroundColor: C.surface, paddingVertical: 16, paddingHorizontal: 8,
+        borderRadius: SIZES.radius, width: '23%', borderWidth: 1, borderColor: C.divider,
+    },
+    actionIcon: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+    actionText: { fontSize: SIZES.caption, color: C.textSecondary, fontWeight: '600' },
+    section: { paddingHorizontal: 20, marginTop: 24 },
+    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+    sectionTitle: { fontSize: SIZES.large, fontWeight: '700', color: C.textPrimary, letterSpacing: -0.3 },
+    seeAll: { fontSize: SIZES.small, color: C.primary, fontWeight: '600' },
+    prayerCard: { backgroundColor: C.surface, borderRadius: SIZES.radius, borderWidth: 1, borderColor: C.divider },
+    prayerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 },
+    prayerRowBorder: { borderBottomWidth: 1, borderBottomColor: C.divider },
+    prayerLeft: { flexDirection: 'row', alignItems: 'center' },
+    prayerIcon: { width: 32, height: 32, borderRadius: 8, backgroundColor: C.surfaceAlt, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+    prayerIconActive: { backgroundColor: C.primary },
+    prayerName: { fontSize: SIZES.font, color: C.textSecondary, fontWeight: '500' },
+    prayerNameActive: { color: C.primary, fontWeight: '700' },
+    prayerTime: { fontSize: SIZES.font, color: C.textSecondary, fontWeight: '600' },
+    prayerTimeActive: { color: C.primary, fontWeight: '700' },
+    nextBadge: { backgroundColor: C.primarySoft, paddingHorizontal: 8, paddingVertical: 2, borderRadius: SIZES.radiusFull, marginLeft: 8 },
+    nextBadgeText: { fontSize: 9, color: C.primary, fontWeight: '700' },
+    lastReadCard: {
+        flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface,
+        padding: 16, borderRadius: SIZES.radius, marginTop: 8, borderWidth: 1, borderColor: C.divider,
+    },
+    lastReadIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: C.primarySoft, justifyContent: 'center', alignItems: 'center' },
+    lastReadInfo: { flex: 1, marginLeft: 14 },
+    lastReadSurah: { fontSize: SIZES.medium, fontWeight: '600', color: C.textPrimary },
+    lastReadAyah: { fontSize: SIZES.small, color: C.textMuted, marginTop: 2 },
 });
 
 export default HomeScreen;

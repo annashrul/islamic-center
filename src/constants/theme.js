@@ -1,32 +1,30 @@
-export const COLORS = {
-  primary: '#1B7A4A',
-  primaryDark: '#0D5C35',
-  primaryLight: '#2E9B62',
-  secondary: '#D4AF37',
-  background: '#F5F5F0',
-  white: '#FFFFFF',
-  black: '#000000',
-  gray: '#666666',
-  lightGray: '#E0E0E0',
-  darkGray: '#333333',
-  arabicBg: '#FFF8E7',
-  cardBg: '#FFFFFF',
-  overlay: 'rgba(0,0,0,0.5)',
-};
+import { getColors } from '../context/ThemeStore';
+
+// COLORS - reads from ThemeStore on every access
+// When theme changes in Settings, ThemeStore is updated, and components re-render via key change
+export const COLORS = new Proxy({}, {
+    get(_, prop) {
+        return getColors()[prop];
+    },
+});
 
 export const FONTS = {
-  regular: 'System',
-  bold: 'System',
+    regular: 'System',
+    bold: 'System',
 };
 
 export const SIZES = {
-  base: 8,
-  small: 12,
-  font: 14,
-  medium: 16,
-  large: 18,
-  extraLarge: 24,
-  xxl: 32,
-  arabic: 28,
-  arabicLarge: 32,
+    xs: 4, sm: 8, md: 12, base: 16, lg: 20, xl: 24, xxl: 32, xxxl: 40,
+    caption: 11, small: 12, font: 14, medium: 16, large: 18, title: 22, header: 28, hero: 36,
+    arabic: 26, arabicLarge: 32,
+    radiusSm: 10, radius: 14, radiusLg: 20, radiusXl: 28, radiusFull: 999,
 };
+
+export const SHADOWS = {
+    soft: { shadowColor: '#1A2B2A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
+    medium: { shadowColor: '#1A2B2A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 12, elevation: 4 },
+    strong: { shadowColor: '#0C6B58', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 16, elevation: 8 },
+};
+
+// Helper: returns fresh colors object (not proxy) for StyleSheet or inline use
+export const getThemeColors = () => ({ ...getColors() });
