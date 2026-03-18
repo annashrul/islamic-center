@@ -1,19 +1,14 @@
 import * as Notifications from 'expo-notifications';
 import { Audio } from 'expo-av';
-import { fetchPrayerTimes } from '../data/apiService';
+import { fetchPrayerTimes } from './apiService';
 import { Platform } from 'react-native';
 import { ADZAN_AUDIO_URL, ADZAN_SUBUH_URL } from '../constants/apiUrls';
+import { PRAYER_NAMES_ID } from '../data/adzanPrayer';
 
-const PRAYER_NAMES_ID = {
-    Fajr: 'Subuh',
-    Dhuhr: 'Dzuhur',
-    Asr: 'Ashar',
-    Maghrib: 'Maghrib',
-    Isha: 'Isya',
-};
+
 
 // Prayers that should trigger adzan (not Sunrise/Imsak)
-const ADZAN_PRAYERS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+const ADZAN_PRAYERS = Object.keys(PRAYER_NAMES_ID);
 
 let adzanSound = null;
 

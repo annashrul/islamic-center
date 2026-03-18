@@ -9,16 +9,15 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { PRAYER_NAMES_ID } from '../data/adzanPrayer';
 import { SIZES } from '../constants/theme';
 import { useSettings } from '../context/SettingsContext';
-import { fetchPrayerTimes } from '../data/apiService';
+import { fetchPrayerTimes, fetchHijriCalendar } from '../services/apiService';
 import { getUserLocation } from '../services/locationService';
 import { getMostRecentLastRead } from '../services/lastReadService';
 
-const PRAYER_NAMES_ID = {
-    Fajr: 'Subuh', Sunrise: 'Terbit', Dhuhr: 'Dzuhur', Asr: 'Ashar', Maghrib: 'Maghrib', Isha: 'Isya',
-};
-const SHOWN_PRAYERS = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+
+const SHOWN_PRAYERS = Object.keys(PRAYER_NAMES_ID);
 const PRAYER_ICONS = {
     Fajr: 'sunny-outline', Sunrise: 'sunny', Dhuhr: 'sunny',
     Asr: 'partly-sunny', Maghrib: 'cloudy-night', Isha: 'moon',
@@ -35,6 +34,7 @@ const HomeScreen = ({ navigation }) => {
     const [loadingPrayer, setLoadingPrayer] = useState(true);
     const [locationName, setLocationName] = useState('');
     const [lastRead, setLastRead] = useState(null);
+    const [agenda, setAgenda] = useState([]);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -72,6 +72,21 @@ const HomeScreen = ({ navigation }) => {
             setPrayerTimes(prayerData.timings);
             const hijri = prayerData.hijri;
             if (hijri) setHijriDate(`${hijri.day} ${hijri.month.en} ${hijri.year} H`);
+
+            // Load agenda (Islamic events this month)
+            const now = new Date();
+            const calData = await fetchHijriCalendar(now.getFullYear(), now.getMonth() + 1, location.latitude, location.longitude);
+            const events = calData.filter(d => d.hijri?.holidays?.length > 0).map(d => ({
+                day: d.gregorian.day,
+                month: d.gregorian.month,
+                weekday: d.gregorian.weekday,
+                hijriDay: d.hijri.day,
+                hijriMonth: d.hijri.monthEn,
+                hijriYear: d.hijri.year,
+                holidays: d.hijri.holidays,
+                isPast: new Date(d.gregorian.year, d.gregorian.month - 1, d.gregorian.day) < new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+            }));
+            setAgenda(events);
         } catch (e) {
             console.error(e);
         } finally {
@@ -227,6 +242,31 @@ const HomeScreen = ({ navigation }) => {
                 </TouchableOpacity>
             </View>
 
+            {/* Agenda */}
+            {agenda.length > 0 && (
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>{t.agenda || 'Agenda'}</Text>
+                    </View>
+                    {agenda.slice(0, 5).map((ev, idx) => (
+                        <View key={idx} style={[styles.agendaCard, ev.isPast && styles.agendaCardPast]}>
+                            <View style={[styles.agendaDateBox, ev.isPast && styles.agendaDateBoxPast]}>
+                                <Text style={[styles.agendaDay, ev.isPast && { color: COLORS.textMuted }]}>{ev.day}</Text>
+                            </View>
+                            <View style={styles.agendaInfo}>
+                                <Text style={[styles.agendaName, ev.isPast && { color: COLORS.textMuted }]} numberOfLines={1}>
+                                    {ev.holidays.join(', ')}
+                                </Text>
+                                <Text style={styles.agendaDate}>
+                                    {ev.hijriDay} {ev.hijriMonth} {ev.hijriYear} H · {ev.weekday}
+                                </Text>
+                            </View>
+                            {!ev.isPast && <Ionicons name="star" size={12} color={COLORS.accent} />}
+                        </View>
+                    ))}
+                </View>
+            )}
+
             <View style={{ height: 30 }} />
         </ScrollView>
     );
@@ -290,6 +330,23 @@ const makeStyles = (C) => ({
     lastReadInfo: { flex: 1, marginLeft: 14 },
     lastReadSurah: { fontSize: SIZES.medium, fontWeight: '600', color: C.textPrimary },
     lastReadAyah: { fontSize: SIZES.small, color: C.textMuted, marginTop: 2 },
+
+    // Agenda
+    agendaCard: {
+        flexDirection: 'row', alignItems: 'center', backgroundColor: C.surface,
+        borderRadius: SIZES.radiusSm, padding: 12, marginBottom: 8,
+        borderWidth: 1, borderColor: C.divider,
+    },
+    agendaCardPast: { opacity: 0.45 },
+    agendaDateBox: {
+        width: 40, height: 40, borderRadius: 10, backgroundColor: C.accentLight,
+        justifyContent: 'center', alignItems: 'center', marginRight: 12,
+    },
+    agendaDateBoxPast: { backgroundColor: C.surfaceAlt },
+    agendaDay: { fontSize: SIZES.medium, fontWeight: '700', color: C.accent },
+    agendaInfo: { flex: 1 },
+    agendaName: { fontSize: SIZES.font, fontWeight: '600', color: C.textPrimary },
+    agendaDate: { fontSize: SIZES.caption, color: C.textMuted, marginTop: 2 },
 });
 
 export default HomeScreen;

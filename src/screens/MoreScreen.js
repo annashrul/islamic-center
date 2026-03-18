@@ -27,6 +27,7 @@ const MoreScreen = ({ navigation }) => {
                 { icon: 'people-outline', color: '#06B6D4', title: t.menu_kisah, subtitle: '', screen: 'KisahNabi' },
                 { icon: 'document-text-outline', color: '#6366F1', title: t.menu_hadits, subtitle: '', screen: 'Hadits' },
                 { icon: 'calculator-outline', color: '#8B5CF6', title: t.menu_zakat, subtitle: '', screen: 'Zakat' },
+                { icon: 'calendar-outline', color: '#10B981', title: t.menu_hijri_calendar, subtitle: '', screen: 'HijriCalendar' },
             ],
         },
         {

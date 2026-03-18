@@ -26,6 +26,7 @@ import ProphetDetailScreen from '../screens/ProphetDetailScreen';
 import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import ThemeSettingsScreen from '../screens/ThemeSettingsScreen';
 import AboutScreen from '../screens/AboutScreen';
+import HijriCalendarScreen from '../screens/HijriCalendarScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -87,10 +88,11 @@ const MoreStack = () => (
         <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
         <Stack.Screen name="ThemeSettings" component={ThemeSettingsScreen} />
         <Stack.Screen name="About" component={AboutScreen} />
+        <Stack.Screen name="HijriCalendar" component={HijriCalendarScreen} />
     </Stack.Navigator>
 );
 
-const QiblaFloatingButton = ({ onPress }) => {
+const FloatingCenterButton = ({ onPress, icon }) => {
     const { colors: C } = useSettings();
     return (
         <TouchableOpacity style={{ top: -22, justifyContent: 'center', alignItems: 'center' }} onPress={onPress} activeOpacity={0.85}>
@@ -98,7 +100,7 @@ const QiblaFloatingButton = ({ onPress }) => {
                 width: 56, height: 56, borderRadius: 28, backgroundColor: C.primary,
                 justifyContent: 'center', alignItems: 'center', borderWidth: 4, borderColor: C.surface,
             }}>
-                <Ionicons name="compass" size={26} color={C.white} />
+                <Ionicons name={icon || 'grid'} size={24} color={C.white} />
             </View>
         </TouchableOpacity>
     );
@@ -116,10 +118,10 @@ const AppNavigator = () => {
                         if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
                         else if (route.name === 'Quran') iconName = focused ? 'book' : 'book-outline';
                         else if (route.name === 'Qibla') iconName = 'compass';
-                        else if (route.name === 'Doa') iconName = focused ? 'heart' : 'heart-outline';
+                        else if (route.name === 'HijriCalendar') iconName = focused ? 'calendar' : 'calendar-outline';
                         else if (route.name === 'More') iconName = focused ? 'grid' : 'grid-outline';
 
-                        if (route.name === 'Qibla') return null;
+                        // if (route.name === 'Qibla') return null;
 
                         return (
                             <View style={{ alignItems: 'center', paddingTop: 2 }}>
@@ -151,17 +153,17 @@ const AppNavigator = () => {
                     tabBarStyle: shouldHideTabBar(route) ? { display: 'none' } : defaultTabStyle(COLORS),
                 })} />
                 <Tab.Screen
-                    name="Qibla"
-                    component={QiblaScreen}
+                    name="More"
+                    component={MoreStack}
                     options={{
                         tabBarLabel: () => null,
                         tabBarButton: (props) => (
-                            <QiblaFloatingButton onPress={props.onPress} />
+                            <FloatingCenterButton onPress={props.onPress} icon="grid" />
                         ),
                     }}
                 />
-                <Tab.Screen name="Doa" component={DuaScreen} options={{ tabBarLabel: t.tab_doa, tabBarStyle: defaultTabStyle(COLORS) }} />
-                <Tab.Screen name="More" component={MoreStack} options={{ tabBarLabel: t.tab_more, tabBarStyle: defaultTabStyle(COLORS) }} />
+                <Tab.Screen name="HijriCalendar" component={HijriCalendarScreen} options={{ tabBarLabel: t.hijri_calendar || 'Kalender', tabBarStyle: defaultTabStyle(COLORS) }} />
+                <Tab.Screen name="Qibla" component={QiblaScreen} options={{ tabBarLabel: t.qibla_title || 'Kiblat', tabBarStyle: defaultTabStyle(COLORS) }} />
             </Tab.Navigator>
         </NavigationContainer>
     );

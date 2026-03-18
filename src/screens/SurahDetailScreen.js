@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SIZES } from '../constants/theme';
 import { QURAN_AUDIO_CDN } from '../constants/apiUrls';
 import { saveLastRead, getLastRead } from '../services/lastReadService';
-import { fetchSurahList, fetchSurahDetail } from '../data/apiService';
+import { fetchSurahList, fetchSurahDetail } from '../services/apiService';
 import { useSettings } from '../context/SettingsContext';
 
 const BISMILLAH = '\u0628\u0650\u0633\u0652\u0645\u0650 \u0627\u0644\u0644\u0651\u064E\u0647\u0650 \u0627\u0644\u0631\u0651\u064E\u062D\u0652\u0645\u064E\u0670\u0646\u0650 \u0627\u0644\u0631\u0651\u064E\u062D\u0650\u064A\u0645\u0650';

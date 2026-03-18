@@ -14,7 +14,7 @@ import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
 import { SIZES } from '../constants/theme';
 import { Audio } from 'expo-av';
-import { fetchAsmaulHusna } from '../data/apiService';
+import { fetchAsmaulHusna } from '../services/apiService';
 import { useSettings } from '../context/SettingsContext';
 
 const LOCAL_DATA = [

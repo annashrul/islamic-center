@@ -6,23 +6,23 @@ import {
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { SIZES, SHADOWS } from '../constants/theme';
-import { fetchPrayerTimes } from '../data/apiService';
+import { fetchPrayerTimes } from '../services/apiService';
 import {
     requestNotificationPermission, scheduleAdzanNotifications,
     getScheduledNotifications,
 } from '../services/adzanService';
 import { getUserLocation } from '../services/locationService';
+import { PRAYER_NAMES_ID } from '../data/adzanPrayer';
+
+
 
 const PRAYER_ICONS = {
     Imsak: 'moon-outline', Fajr: 'sunny-outline', Sunrise: 'sunny',
     Dhuhr: 'sunny', Asr: 'partly-sunny', Maghrib: 'cloudy-night', Isha: 'moon',
 };
-const PRAYER_NAMES_ID = {
-    Imsak: 'Imsak', Fajr: 'Subuh', Sunrise: 'Terbit',
-    Dhuhr: 'Dzuhur', Asr: 'Ashar', Maghrib: 'Maghrib', Isha: 'Isya',
-};
-const SHOWN_PRAYERS = ['Imsak', 'Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-const ADZAN_PRAYERS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+
+const SHOWN_PRAYERS = Object.keys(PRAYER_NAMES_ID);
+const ADZAN_PRAYERS = Object.keys(PRAYER_NAMES_ID);
 
 import { ADZAN_AUDIO_URL, ADZAN_SUBUH_URL } from '../constants/apiUrls';
 import { useSettings } from '../context/SettingsContext';

@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SIZES, SHADOWS } from '../constants/theme';
-import { fetchSurahList, fetchJuzList } from '../data/apiService';
+import { fetchSurahList, fetchJuzList } from '../services/apiService';
 import { getMostRecentLastRead } from '../services/lastReadService';
 import { useSettings } from '../context/SettingsContext';
 

@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SIZES } from '../constants/theme';
 import { QURAN_AUDIO_CDN } from '../constants/apiUrls';
 import { saveLastRead, getLastReadJuz } from '../services/lastReadService';
-import { fetchJuzDetail } from '../data/apiService';
+import { fetchJuzDetail } from '../services/apiService';
 import { useSettings } from '../context/SettingsContext';
 
 const JuzDetailScreen = ({ route, navigation }) => {

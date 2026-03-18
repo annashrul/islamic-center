@@ -11,6 +11,10 @@ import {
     KISAH_NABI_API_URL,
     GOLD_PRICE_API_URL,
 } from '../constants/apiUrls';
+import { Platform } from 'react-native';
+
+// CORS proxy for web platform
+
 
 // ====== QURAN - SURAH ======
 export const fetchSurahList = async () => {
@@ -280,6 +284,37 @@ export const fetchGoldPrice = async () => {
         const data = await res.json();
         return data;
     } catch (e) { return { price_per_gram: 1_300_000 }; }
+};
+
+// ====== HIJRI CALENDAR ======
+export const fetchHijriCalendar = async (year, month, latitude = -6.2088, longitude = 106.8456) => {
+    try {
+        const res = await fetch(
+            `${ALADHAN_API_BASE}/calendar/${year}/${month}?latitude=${latitude}&longitude=${longitude}&method=20`
+        );
+        const data = await res.json();
+        if (data.code === 200) {
+            console.log(data.data)
+            return data.data.map((d) => ({
+                gregorian: {
+                    day: parseInt(d.date.gregorian.day),
+                    month: parseInt(d.date.gregorian.month.number),
+                    year: parseInt(d.date.gregorian.year),
+                    weekday: d.date.gregorian.weekday.en,
+                    date: d.date.gregorian.date,
+                },
+                hijri: {
+                    day: parseInt(d.date.hijri.day),
+                    month: parseInt(d.date.hijri.month.number),
+                    monthEn: d.date.hijri.month.en,
+                    monthAr: d.date.hijri.month.ar,
+                    year: parseInt(d.date.hijri.year),
+                    holidays: d.date.hijri.holidays || [],
+                },
+            }));
+        }
+        return [];
+    } catch (e) { return []; }
 };
 
 // ====== QIBLA DIRECTION ======

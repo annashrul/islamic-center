@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SIZES } from '../constants/theme';
-import { fetchJuzSurahs } from '../data/apiService';
+import { fetchJuzSurahs } from '../services/apiService';
 import { useSettings } from '../context/SettingsContext';
 
 const JuzSurahListScreen = ({ route, navigation }) => {

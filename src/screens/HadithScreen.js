@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SIZES } from '../constants/theme';
-import { fetchHadithBySections } from '../data/apiService';
+import { fetchHadithBySections } from '../services/apiService';
 import { useSettings } from '../context/SettingsContext';
 
 const BOOKS = [

@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SIZES } from '../constants/theme';
-import { fetchProphetStories } from '../data/apiService';
+import { fetchProphetStories } from '../services/apiService';
 import { useSettings } from '../context/SettingsContext';
 
 const getArabicName = (name) => {

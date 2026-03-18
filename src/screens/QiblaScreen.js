@@ -6,7 +6,7 @@ import * as Location from 'expo-location';
 import { Magnetometer } from 'expo-sensors';
 import { Ionicons } from '@expo/vector-icons';
 import { SIZES } from '../constants/theme';
-import { fetchQiblaDirection } from '../data/apiService';
+import { fetchQiblaDirection } from '../services/apiService';
 import { getUserLocation } from '../services/locationService';
 import { useSettings } from '../context/SettingsContext';
 
