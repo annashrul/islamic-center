@@ -1,0 +1,21 @@
+name: EAS Auto Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  eas-preview-build:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.4
+          cache: npm
+      - run: npm ci
+      - run: npx eas-cli@latest build --platform all --profile preview --non-interactive --no-wait
