@@ -27,7 +27,6 @@ const HijriCalendarScreen = ({ navigation }) => {
         setLoading(true);
         try {
             const data = await fetchHijriCalendar(year, month);
-            console.log(`Calendar ${year}/${month}: ${data.length} days, holidays: ${data.filter(d => d.hijri.holidays.length > 0).length}`);
             setDays(data);
         } catch (e) {
             console.error('Calendar load error:', e);

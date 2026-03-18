@@ -93,7 +93,6 @@ export const scheduleAdzanNotifications = async (latitude = -6.2088, longitude =
                     },
                 });
 
-                console.log(`Scheduled adzan for ${PRAYER_NAMES_ID[prayerKey]} at ${timeStr} (in ${secondsUntil}s)`);
             }
         }
 

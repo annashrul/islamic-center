@@ -104,7 +104,7 @@ const HomeScreen = ({ navigation }) => {
         { icon: 'time-outline', label: t.menu_prayer, nav: 'Home_PrayerTimes', bg: COLORS.accentLight, color: COLORS.accent },
         { icon: 'radio-button-on-outline', label: t.menu_tasbih, nav: 'Home_Tasbih', bg: COLORS.surfaceAlt, color: '#7E57C2' },
         { icon: 'star-outline', label: t.menu_asmaul, nav: 'Home_AsmaulHusna', bg: COLORS.primarySoft, color: COLORS.primary },
-        { icon: 'heart-outline', label: t.menu_doa, nav: 'Home_Doa', bg: COLORS.surfaceAlt, color: '#E91E63' },
+        { icon: 'book-outline', label: t.menu_kisah, nav: 'Home_KisahNabi', bg: COLORS.surfaceAlt, color: '#E91E63' },
     ];
 
     return (

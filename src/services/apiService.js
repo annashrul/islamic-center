@@ -294,7 +294,6 @@ export const fetchHijriCalendar = async (year, month, latitude = -6.2088, longit
         );
         const data = await res.json();
         if (data.code === 200) {
-            console.log(data.data)
             return data.data.map((d) => ({
                 gregorian: {
                     day: parseInt(d.date.gregorian.day),

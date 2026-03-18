@@ -69,6 +69,8 @@ const HomeStack = () => (
         <Stack.Screen name="Home_Tasbih" component={TasbihScreen} />
         <Stack.Screen name="Home_AsmaulHusna" component={AsmaulHusnaScreen} />
         <Stack.Screen name="Home_Doa" component={DuaScreen} />
+        <Stack.Screen name="Home_KisahNabi" component={ProphetStoriesScreen} />
+        <Stack.Screen name="ProphetDetail" component={ProphetDetailScreen} />
     </Stack.Navigator>
 );
 
