@@ -1,5 +1,8 @@
 {
   "expo": {
+    "updates": {
+        "fallbackToCacheTimeout": 0
+    },
     "name": "islamic-center",
     "slug": "islamic-pisan",
     "version": "1.0.0",
@@ -7,33 +10,33 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash-logo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+        "image": "./assets/splash-logo.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.annashrul.islamiccenter"
+        "supportsTablet": true,
+        "bundleIdentifier": "com.annashrul.islamiccenter"
     },
     "android": {
-      "package": "com.annashrul.islamiccenter",
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+        "package": "com.annashrul.islamiccenter",
+        "adaptiveIcon": {
+            "backgroundColor": "#E6F4FE",
+            "foregroundImage": "./assets/android-icon-foreground.png",
+            "backgroundImage": "./assets/android-icon-background.png",
+            "monochromeImage": "./assets/android-icon-monochrome.png"
+        }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+        "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "eas": {
-        "projectId": "ab3f7f16-3660-4067-9b8f-22bfe18d5dd4"
-      }
+        "eas": {
+            "projectId": "ab3f7f16-3660-4067-9b8f-22bfe18d5dd4"
+        }
     },
     "plugins": [
-      "expo-font"
+        "expo-font"
     ]
   }
 }
