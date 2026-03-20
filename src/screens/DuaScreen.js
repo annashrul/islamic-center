@@ -119,7 +119,7 @@ const DuaScreen = () => {
 const makeStyles = (C) => ({
     container: { flex: 1, backgroundColor: C.background },
     header: {
-        backgroundColor: C.primary, paddingTop: 30, paddingBottom: 22, paddingHorizontal: 20,
+        backgroundColor: C.primary, paddingTop: 50, paddingBottom: 22, paddingHorizontal: 20,
         borderBottomLeftRadius: SIZES.radiusXl, borderBottomRightRadius: SIZES.radiusXl,
     },
     headerTitle: { fontSize: SIZES.header, fontWeight: '700', color: C.white, letterSpacing: -0.5 },

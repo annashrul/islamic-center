@@ -79,7 +79,7 @@ export const SettingsProvider = ({ children }) => {
                     if (saved.langId) setLangId(saved.langId);
                     if (saved.fontSizeId) setFontSizeId(saved.fontSizeId);
                 }
-            } catch (e) {}
+            } catch (e) { }
             setLoaded(true);
         })();
     }, []);
@@ -87,7 +87,7 @@ export const SettingsProvider = ({ children }) => {
     // Save whenever settings change
     useEffect(() => {
         if (!loaded) return;
-        AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify({ themeId, langId, fontSizeId })).catch(() => {});
+        AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify({ themeId, langId, fontSizeId })).catch(() => { });
     }, [themeId, langId, fontSizeId, loaded]);
 
     const colors = THEME_COLORS[themeId] || THEME_COLORS.light;

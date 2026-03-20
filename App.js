@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold } from '@expo-google-fonts/inter';
 import AppNavigator from './src/navigation/AppNavigator';
 import {
     requestNotificationPermission,
@@ -13,6 +14,14 @@ import { getUserLocation } from './src/services/locationService';
 import { SettingsProvider } from './src/context/SettingsContext';
 
 export default function App() {
+    const [fontsLoaded] = useFonts({
+        Inter_400Regular,
+        Inter_500Medium,
+        Inter_600SemiBold,
+        Inter_700Bold,
+        Inter_800ExtraBold,
+    });
+
     const [adzanAlert, setAdzanAlert] = useState(null);
     const notificationListener = useRef();
     const responseListener = useRef();
@@ -75,6 +84,17 @@ export default function App() {
         if (granted) {
             const location = await getUserLocation();
             await scheduleAdzanNotifications(location.latitude, location.longitude);
+
+            // Verify scheduled notifications
+            const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+            console.log(`Total scheduled notifications: ${scheduled.length}`);
+            scheduled.slice(0, 3).forEach((n) => {
+                const trigger = n.trigger;
+                const seconds = trigger?.seconds || trigger?.value;
+                const hours = seconds ? Math.floor(seconds / 3600) : '?';
+                const mins = seconds ? Math.floor((seconds % 3600) / 60) : '?';
+                console.log(`  - ${n.content.title} | in ${hours}h ${mins}m`);
+            });
         }
     };
 
@@ -94,6 +114,32 @@ export default function App() {
         flex: 1, maxWidth: 430, alignSelf: 'center', width: '100%',
         shadowColor: '#000', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.15, shadowRadius: 20,
     } : { flex: 1 };
+
+    if (!fontsLoaded) return null;
+
+    // Map fontWeight to Inter font family globally
+    const origRender = Text.render || Text.prototype?.render;
+    if (!Text.__interPatched) {
+        const oldRender = Text.render;
+        Text.render = function (props, ref) {
+            const flatStyle = props.style ? (Array.isArray(props.style) ? Object.assign({}, ...props.style.flat().filter(Boolean)) : props.style) : {};
+            const weight = flatStyle.fontWeight || '400';
+            const fontMap = {
+                '400': 'Inter_400Regular', 'normal': 'Inter_400Regular',
+                '500': 'Inter_500Medium',
+                '600': 'Inter_600SemiBold',
+                '700': 'Inter_700Bold', 'bold': 'Inter_700Bold',
+                '800': 'Inter_800ExtraBold',
+            };
+            const mappedFont = fontMap[weight] || 'Inter_400Regular';
+            const newProps = {
+                ...props,
+                style: [{ fontFamily: mappedFont }, props.style],
+            };
+            return oldRender.call(this, newProps, ref);
+        };
+        Text.__interPatched = true;
+    }
 
     return (
         <SettingsProvider>

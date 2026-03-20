@@ -18,6 +18,8 @@ const MoreScreen = ({ navigation }) => {
                 { icon: 'heart-outline', color: '#E91E63', title: t.menu_doa, subtitle: '', screen: 'Doa' },
                 { icon: 'radio-button-on-outline', color: '#7E57C2', title: t.menu_tasbih, subtitle: '', screen: 'Tasbih' },
                 { icon: 'sunny-outline', color: '#F59E0B', title: t.menu_dzikir, subtitle: '', screen: 'Dzikir' },
+                { icon: 'location-outline', color: '#10B981', title: t.nearby_mosque || 'Masjid Terdekat', subtitle: '', screen: 'NearbyMosque' },
+                { icon: 'restaurant-outline', color: '#F59E0B', title: t.halal_food || 'Restoran Halal', subtitle: '', screen: 'HalalFood' },
             ],
         },
         {
@@ -88,7 +90,7 @@ const MoreScreen = ({ navigation }) => {
 const makeStyles = (C) => ({
     container: { flex: 1, backgroundColor: C.background },
     header: {
-        backgroundColor: C.primary, paddingTop: 30, paddingBottom: 24, paddingHorizontal: 20,
+        backgroundColor: C.primary, paddingTop: 50, paddingBottom: 24, paddingHorizontal: 20,
         borderBottomLeftRadius: SIZES.radiusXl, borderBottomRightRadius: SIZES.radiusXl,
     },
     profileSection: { flexDirection: 'row', alignItems: 'center' },

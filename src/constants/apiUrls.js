@@ -31,5 +31,12 @@ export const ISLAMIC_API_KEY = 'sJvhWpQGn65F56NC8fypGp9cDVTzCKXAcIIOPMCUxTJJFmrt
 // ====== KISAH NABI ======
 export const KISAH_NABI_API_URL = 'https://islamic-api-zhirrr.vercel.app/api/kisahnabi';
 
+// ====== MASJID & HALAL (OpenStreetMap Overpass) ======
+export const OVERPASS_SERVERS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+];
+export const OVERPASS_API_URL = OVERPASS_SERVERS[0];
+
 // ====== HARGA EMAS (untuk Zakat) ======
 export const GOLD_PRICE_API_URL = 'https://api.logam-mulia.com/api/v1/gold-price';

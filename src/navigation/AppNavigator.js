@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { NavigationContainer, getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -27,6 +27,8 @@ import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import ThemeSettingsScreen from '../screens/ThemeSettingsScreen';
 import AboutScreen from '../screens/AboutScreen';
 import HijriCalendarScreen from '../screens/HijriCalendarScreen';
+import NearbyMosqueScreen from '../screens/NearbyMosqueScreen';
+import HalalFoodScreen from '../screens/HalalFoodScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -66,9 +68,8 @@ const HomeStack = () => (
         <Stack.Screen name="Home_SurahDetail" component={SurahDetailScreen} />
         <Stack.Screen name="Home_PrayerTimes" component={PrayerTimesScreen} />
         <Stack.Screen name="Home_Qibla" component={QiblaScreen} />
-        <Stack.Screen name="Home_Tasbih" component={TasbihScreen} />
-        <Stack.Screen name="Home_AsmaulHusna" component={AsmaulHusnaScreen} />
-        <Stack.Screen name="Home_Doa" component={DuaScreen} />
+        <Stack.Screen name="Home_NearbyMosque" component={NearbyMosqueScreen} />
+        <Stack.Screen name="Home_HalalFood" component={HalalFoodScreen} />
         <Stack.Screen name="Home_KisahNabi" component={ProphetStoriesScreen} />
         <Stack.Screen name="ProphetDetail" component={ProphetDetailScreen} />
     </Stack.Navigator>
@@ -91,6 +92,8 @@ const MoreStack = () => (
         <Stack.Screen name="ThemeSettings" component={ThemeSettingsScreen} />
         <Stack.Screen name="About" component={AboutScreen} />
         <Stack.Screen name="HijriCalendar" component={HijriCalendarScreen} />
+        <Stack.Screen name="NearbyMosque" component={NearbyMosqueScreen} />
+        <Stack.Screen name="HalalFood" component={HalalFoodScreen} />
     </Stack.Navigator>
 );
 
@@ -139,11 +142,16 @@ const AppNavigator = () => {
                     },
                     tabBarActiveTintColor: COLORS.primary,
                     tabBarInactiveTintColor: COLORS.textMuted || '#9CA8A7',
-                    tabBarLabelStyle: {
-                        fontSize: 10,
-                        fontWeight: '600',
-                        marginTop: -2,
-                    },
+                    tabBarLabel: ({ focused, color, children }) => (
+                        <Text style={{
+                            fontSize: 10,
+                            fontFamily: focused ? 'Inter_700Bold' : 'Inter_500Medium',
+                            color,
+                            marginTop: -2,
+                        }}>
+                            {children}
+                        </Text>
+                    ),
                 })}
             >
                 <Tab.Screen name="Home" component={HomeStack} options={({ route }) => ({
@@ -159,6 +167,7 @@ const AppNavigator = () => {
                     component={MoreStack}
                     options={{
                         tabBarLabel: () => null,
+                        tabBarStyle: defaultTabStyle(COLORS),
                         tabBarButton: (props) => (
                             <FloatingCenterButton onPress={props.onPress} icon="grid" />
                         ),

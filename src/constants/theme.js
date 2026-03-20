@@ -1,7 +1,5 @@
 import { getColors } from '../context/ThemeStore';
 
-// COLORS - reads from ThemeStore on every access
-// When theme changes in Settings, ThemeStore is updated, and components re-render via key change
 export const COLORS = new Proxy({}, {
     get(_, prop) {
         return getColors()[prop];
@@ -9,8 +7,11 @@ export const COLORS = new Proxy({}, {
 });
 
 export const FONTS = {
-    regular: 'System',
-    bold: 'System',
+    regular: 'Inter_400Regular',
+    medium: 'Inter_500Medium',
+    semibold: 'Inter_600SemiBold',
+    bold: 'Inter_700Bold',
+    extrabold: 'Inter_800ExtraBold',
 };
 
 export const SIZES = {
@@ -26,5 +27,4 @@ export const SHADOWS = {
     strong: { shadowColor: '#0C6B58', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 16, elevation: 8 },
 };
 
-// Helper: returns fresh colors object (not proxy) for StyleSheet or inline use
 export const getThemeColors = () => ({ ...getColors() });

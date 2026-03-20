@@ -102,7 +102,7 @@ const makeStyles = (C) => ({
     container: { flex: 1, backgroundColor: C.background },
     nav: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-        backgroundColor: C.primary, paddingTop: 10, paddingBottom: 12, paddingHorizontal: 16,
+        backgroundColor: C.primary, paddingTop: 50, paddingBottom: 12, paddingHorizontal: 16,
     },
     navBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
     navTitle: { fontSize: SIZES.large, fontWeight: '700', color: C.white, letterSpacing: -0.3 },

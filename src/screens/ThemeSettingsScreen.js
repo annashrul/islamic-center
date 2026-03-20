@@ -134,7 +134,7 @@ const s = StyleSheet.create({
     container: { flex: 1 },
     header: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-        paddingTop: 10, paddingBottom: 14, paddingHorizontal: 16,
+        paddingTop: 50, paddingBottom: 14, paddingHorizontal: 16,
     },
     backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
     headerTitle: { fontSize: SIZES.large, fontWeight: '700' },

@@ -11,6 +11,7 @@ import {
     HADITH_CDN_BASE,
     KISAH_NABI_API_URL,
     GOLD_PRICE_API_URL,
+    OVERPASS_SERVERS,
 } from '../constants/apiUrls';
 import { Platform } from 'react-native';
 
@@ -72,16 +73,6 @@ const getPrayerLocationQuery = async (latitude, longitude) => {
     }
 };
 
-const fetchPrayerTimesFromMuslimSalat = async (latitude, longitude, date = new Date()) => {
-    const query = await getPrayerLocationQuery(latitude, longitude);
-    const encodedQuery = encodeURIComponent(query);
-    const datePath = formatDatePathSegment(date);
-    const res = await fetch(`${MUSLIM_SALAT_API_BASE}/${encodedQuery}/${datePath}.json`);
-    const data = await res.json();
-    const item = Array.isArray(data?.items) ? data.items[0] : null;
-    return normalizeMuslimSalatTimings(item);
-};
-
 export const fetchPrayerMonthSchedule = async (latitude, longitude, startDate = new Date(), days = 30) => {
     const safeDays = Math.max(1, days);
     const endDate = new Date(startDate);
@@ -124,9 +115,6 @@ export const fetchPrayerMonthSchedule = async (latitude, longitude, startDate = 
         .filter((row) => row.date >= startDate && row.date <= endDate)
         .sort((a, b) => a.date - b.date);
 };
-
-// CORS proxy for web platform
-
 
 // ====== QURAN - SURAH ======
 export const fetchSurahList = async () => {
@@ -255,22 +243,15 @@ export const fetchPrayerTimes = async (latitude, longitude, date) => {
     const mm = d.getMonth() + 1;
     const yyyy = d.getFullYear();
 
-    let muslimSalatTimings = null;
-    try {
-        muslimSalatTimings = await fetchPrayerTimesFromMuslimSalat(latitude, longitude, d);
-    } catch (e) { }
-
-    const aladhanRes = await fetch(
+    const res = await fetch(
         `${ALADHAN_API_BASE}/timings/${dd}-${mm}-${yyyy}?latitude=${latitude}&longitude=${longitude}&method=20`
     );
-    const aladhanData = await aladhanRes.json();
-    if (aladhanData.code === 200) {
-        const fallbackTimings = aladhanData.data.timings;
-        const timings = muslimSalatTimings || fallbackTimings;
+    const data = await res.json();
+    if (data.code === 200) {
         return {
-            timings,
-            date: aladhanData.data.date,
-            hijri: aladhanData.data.date?.hijri || null,
+            timings: data.data.timings,
+            date: data.data.date,
+            hijri: data.data.date?.hijri || null,
         };
     }
     throw new Error('Failed to fetch prayer times');
@@ -443,4 +424,85 @@ export const fetchQiblaDirection = async (latitude, longitude) => {
         if (data.code === 200) return data.data;
         return null;
     } catch (e) { return null; }
+};
+
+// ====== NEARBY MOSQUES (OpenStreetMap) ======
+// Haversine formula
+const getDistanceKm = (lat1, lon1, lat2, lon2) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+// Shared Overpass query with multi-server failover
+const queryOverpass = async (query) => {
+    for (const server of OVERPASS_SERVERS) {
+        for (let retry = 0; retry < 2; retry++) {
+            try {
+                const controller = new AbortController();
+                const tid = setTimeout(() => controller.abort(), 15000);
+                const res = await fetch(`${server}?data=${encodeURIComponent(query)}`, { signal: controller.signal });
+                clearTimeout(tid);
+
+                if (!res.ok) continue;
+                const text = await res.text();
+                if (!text || text.startsWith('<')) continue;
+
+                const data = JSON.parse(text);
+                if (data.elements) return data.elements;
+            } catch (e) {
+                if (retry === 0) await new Promise(r => setTimeout(r, 1500));
+            }
+        }
+    }
+    return [];
+};
+
+export const fetchNearbyMosques = async (latitude, longitude, radiusMeters = 5000) => {
+    const query = `[out:json][timeout:10];node["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusMeters},${latitude},${longitude});out body 50;`;
+    const elements = await queryOverpass(query);
+
+    return elements.map((e) => {
+        const tags = e.tags || {};
+        const dist = getDistanceKm(latitude, longitude, e.lat, e.lon);
+        return {
+            id: e.id,
+            name: tags.name || tags['name:id'] || tags['name:ar'] || 'Masjid',
+            lat: e.lat, lon: e.lon,
+            distance: dist,
+            distanceText: dist < 1 ? `${Math.round(dist * 1000)} m` : `${dist.toFixed(1)} km`,
+            address: tags['addr:street'] || tags['addr:full'] || tags['addr:city'] || '',
+            phone: tags.phone || tags['contact:phone'] || '',
+            type: tags.building === 'mosque' ? 'mosque' : 'musholla',
+        };
+    }).filter(e => e.lat && e.lon).sort((a, b) => a.distance - b.distance);
+};
+
+// ====== HALAL RESTAURANTS ======
+export const fetchHalalRestaurants = async (latitude, longitude, radiusMeters = 5000) => {
+    const query = `[out:json][timeout:10];(node["diet:halal"="yes"](around:${radiusMeters},${latitude},${longitude});node["cuisine"~"halal"](around:${radiusMeters},${latitude},${longitude});node["halal"="yes"]["amenity"="restaurant"](around:${radiusMeters},${latitude},${longitude}););out body 50;`;
+    const elements = await queryOverpass(query);
+
+    const seen = new Set();
+    return elements.map((e) => {
+        const tags = e.tags || {};
+        const dist = getDistanceKm(latitude, longitude, e.lat, e.lon);
+        const key = `${tags.name || ''}-${e.lat}`;
+        if (seen.has(key)) return null;
+        seen.add(key);
+        return {
+            id: e.id,
+            name: tags.name || tags['name:en'] || 'Restaurant',
+            lat: e.lat, lon: e.lon,
+            distance: dist,
+            distanceText: dist < 1 ? `${Math.round(dist * 1000)} m` : `${dist.toFixed(1)} km`,
+            address: tags['addr:street'] || tags['addr:full'] || tags['addr:city'] || '',
+            phone: tags.phone || tags['contact:phone'] || '',
+            cuisine: tags.cuisine || '',
+            openingHours: tags.opening_hours || '',
+            halalCertified: tags['diet:halal'] === 'yes' || tags.halal === 'yes',
+        };
+    }).filter(Boolean).sort((a, b) => a.distance - b.distance);
 };

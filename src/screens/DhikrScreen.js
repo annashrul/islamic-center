@@ -118,7 +118,7 @@ const DhikrScreen = () => {
 const makeStyles = (C) => ({
     container: { flex: 1, backgroundColor: C.background },
     header: {
-        backgroundColor: C.primary, paddingTop: 30, paddingBottom: 25, paddingHorizontal: 20,
+        backgroundColor: C.primary, paddingTop: 50, paddingBottom: 25, paddingHorizontal: 20,
         borderBottomLeftRadius: 25, borderBottomRightRadius: 25,
     },
     headerTitle: { fontSize: SIZES.xxl, fontWeight: '700', color: C.white },

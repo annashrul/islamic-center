@@ -103,8 +103,8 @@ const HomeScreen = ({ navigation }) => {
 
     const quickActions = [
         { icon: 'time-outline', label: t.menu_prayer, nav: 'Home_PrayerTimes', bg: COLORS.accentLight, color: COLORS.accent },
-        { icon: 'radio-button-on-outline', label: t.menu_tasbih, nav: 'Home_Tasbih', bg: COLORS.surfaceAlt, color: '#7E57C2' },
-        { icon: 'star-outline', label: t.menu_asmaul, nav: 'Home_AsmaulHusna', bg: COLORS.primarySoft, color: COLORS.primary },
+        { icon: 'location-outline', label: t.nearby_mosque, nav: 'Home_NearbyMosque', bg: COLORS.primarySoft, color: '#10B981' },
+        { icon: 'restaurant-outline', label: t.halal_food, nav: 'Home_HalalFood', bg: COLORS.surfaceAlt, color: '#F59E0B' },
         { icon: 'book-outline', label: t.menu_kisah, nav: 'Home_KisahNabi', bg: COLORS.surfaceAlt, color: '#E91E63' },
     ];
 
@@ -148,7 +148,7 @@ const HomeScreen = ({ navigation }) => {
                 {quickActions.map((item) => (
                     <TouchableOpacity key={item.label} style={styles.actionCard} onPress={() => navigation.navigate(item.nav)} activeOpacity={0.7}>
                         <View style={[styles.actionIcon, { backgroundColor: item.bg }]}>
-                            <Ionicons name={item.icon} size={22} color={item.color} />
+                            <Ionicons name={item.icon} size={24} color={item.color} />
                         </View>
                         <Text style={styles.actionText}>{item.label}</Text>
                     </TouchableOpacity>
@@ -276,7 +276,7 @@ const HomeScreen = ({ navigation }) => {
 const makeStyles = (C) => ({
     container: { flex: 1, backgroundColor: C.background },
     header: {
-        backgroundColor: C.primary, paddingTop: 30, paddingBottom: 24, paddingHorizontal: 20,
+        backgroundColor: C.primary, paddingTop: 50, paddingBottom: 24, paddingHorizontal: 20,
         borderBottomLeftRadius: SIZES.radiusXl, borderBottomRightRadius: SIZES.radiusXl,
     },
     headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
@@ -306,10 +306,10 @@ const makeStyles = (C) => ({
     nextPrayerTime: { fontSize: SIZES.large, fontWeight: '700', color: C.white },
     quickActions: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: -16 },
     actionCard: {
-        alignItems: 'center', backgroundColor: C.surface, paddingVertical: 16, paddingHorizontal: 8,
+        alignItems: 'center', backgroundColor: C.surface, paddingVertical: 16, paddingHorizontal: 0,
         borderRadius: SIZES.radius, width: '23%', borderWidth: 1, borderColor: C.divider,
     },
-    actionIcon: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+    actionIcon: { width: 48, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
     actionText: { fontSize: SIZES.caption, color: C.textSecondary, fontWeight: '600', alignItems: 'center', justifyContent: 'center' },
     section: { paddingHorizontal: 20, marginTop: 24 },
     sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },

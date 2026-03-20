@@ -91,7 +91,7 @@ const AboutScreen = ({ navigation }) => {
                         <TouchableOpacity
                             key={source.name}
                             style={[styles.sourceRow, idx < API_SOURCES.length - 1 && styles.rowBorder]}
-                            onPress={() => Linking.openURL(source.url).catch(() => {})}
+                            onPress={() => Linking.openURL(source.url).catch(() => { })}
                             activeOpacity={0.6}
                         >
                             <View style={{ flex: 1 }}>
@@ -157,7 +157,7 @@ const makeStyles = (C) => ({
     container: { flex: 1, backgroundColor: C.background },
     header: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-        backgroundColor: C.primary, paddingTop: 10, paddingBottom: 14, paddingHorizontal: 16,
+        backgroundColor: C.primary, paddingTop: 50, paddingBottom: 14, paddingHorizontal: 16,
     },
     backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
     headerTitle: { fontSize: SIZES.large, fontWeight: '700', color: C.white },
